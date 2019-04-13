@@ -1,0 +1,7 @@
+#!/bin/bash
+#新建一个虚拟机s
+cd  /var/lib/libvirt/images
+qemu-img create  -f  qcow2 -b node.qcow2  node$a.img  50G
+sed  "s/node/node$a/"  /root/nsd1812/node.xml  >  /etc/libvirt/qemu/node$a.xml
+virsh  define  /etc/libvirt/qemu/node$a.xml
+virsh  start  node$a
