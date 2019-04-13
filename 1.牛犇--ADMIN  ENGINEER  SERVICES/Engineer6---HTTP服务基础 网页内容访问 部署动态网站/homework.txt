@@ -1,0 +1,19 @@
+1、C
+2、/etc/fstab             /etc/resolv.conf
+3、cifs
+4、/etc/exports
+5、/etc/yum.repos.d/      []  name   baseurl   enabled  gpgcheck
+6、ServerName  DocumentRoot
+7、DocumentRoot
+8、
+<VirtualHost ip:端口>
+    ServerName  域名
+    DocumentRoot 网页根目录
+</VirtualHost>
+<Directory 网页根目录>
+    Require ip ip地址
+</Directory>
+9、cd pwd  ls   echo  useradd  password   grep   find    dig  ping  less  tar  
+    cp  mv  rm crontab  head  tail reboot  poweroff  
+
+

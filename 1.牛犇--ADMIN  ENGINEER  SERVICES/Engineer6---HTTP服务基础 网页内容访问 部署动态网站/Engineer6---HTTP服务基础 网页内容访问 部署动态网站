@@ -1,0 +1,130 @@
+1：部署环境
+   设置防火墙默认区域
+虚拟机server
+[root@server0 ~]#  firewall-cmd --set-default-zone=trusted 
+虚拟机desktop
+[root@desktop0 ~]# firewall-cmd --set-default-zone=trusted
+******************************************************************************
+WEB通信的原理是基于B/S架构
+    服务端提供网页
+    客户端访问和下载网页的
+    采用的是HTML语言
+    采用的是HTTP，使用的端口号是80
+
+软件包是httpd
+系统服务是httpd
+提供的默认配置是
+监听的端口是  80
+Servername     本站点注册的DNS名称
+DocumentRoot  网页根目录
+DirectoryIndex:起始页/首页文件名(index.html)
+
+ 一，搭建基本的WEB服务
+虚拟机server
+1.安装软件httpd
+[root@server0 ~]# yum -y install httpd
+2.书写一页面文件
+]# echo '<h1>NSD1811 Web1' > /var/www/html/index.html
+]# cat /var/www/html/index.html
+<h1>NSD1811 Web1
+3.重起httpd服务
+[root@server0 ~]# systemctl restart httpd
+[root@server0 ~]# systemctl enable httpd
+
+虚拟机desktop上验证
+[root@desktop0 ~]# firefox 172.25.0.11       (在进行这个动作前一定要关闭防火墙，否则 无法成功)
+
+*******************************************************************************
+– ServerName:本站点注册的DNS名称(空缺)
+             DNS服务器:虚拟机classroom
+
+              server0.example.com
+              www0.example.com
+              webapp0.example.com
+******************************************************************************
+DocumentRoot--网页默认存放的根目录（/var/www/html）
+
+1:建立网页存放的路径
+[root@server0 ~]# mkdir  /var/www/myweb                                  //建立网页存放路径
+[root@server0 ~]# echo  '<h1>wo shi myweb' >  /var/www/myweb/index.html    //建立简单网页文件
+2：修改配置文件，修改他的网页目录存放路径
+[root@server0 ~]# vim  /etc/httpd/conf/httpd.conf 
+ DocumentRoot   "/var/www/myweb"
+3.重起httpd服务
+[root@server0 ~]# systemctl  restart  httpd
+4:虚拟机上进行验证
+[root@desktop0 ~]# firefox  172.25.0.11
+
+***********************************************************************************
+网络路径与服务器实际存放路径:网页文件的根目录
+
+网络路径
+# firefox 172.25.0.11-->httpd-->DocumenRoot-->/var/www/myweb
+服务器实际存放路径
+   /var/www/myweb
+
+网络路径
+# firefox 172.25.0.11/var/www/myweb/nsd---->httpd
+服务器实际存放路径
+    /var/www/myweb/var/www/myweb/nsd
+
+网络路径
+# firefox 172.25.0.11/nsd
+服务器实际存放路径
+    /var/www/myweb/nsd
+
+**********************************************************************************
+虚拟Web主机
+– 由同一台服务器提供多个不同的Web站点
+
+• 区分方式(构建方式)
+– 基于域名的虚拟主机
+– 基于端口的虚拟主机
+– 基于IP地址的虚拟主机
+
+ 配置文件路径
+– /etc/httpd/conf/httpd.conf   #主配置文件
+– /etc/httpd/conf.d/*.conf     #调用配置文件
+
+为每个虚拟站点添加配置
+  <VirtualHost  IP地址:端口>
+   ServerName  此站点的DNS名称
+   DocumentRoot  此站点的网页根目录
+  </VirtualHost>
+
+虚拟WEB主机，会由上及下。进行匹配，写在上面的优先级高
+
+虚拟机SERVER
+1：在新的调用配置文件中书写
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

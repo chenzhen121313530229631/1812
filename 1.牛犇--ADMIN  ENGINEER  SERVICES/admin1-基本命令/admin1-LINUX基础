@@ -1,0 +1,152 @@
+1：服务模式
+  C/S架构：服务器提供某种资源或功能，客户机使用该资源和功能
+2：TCP/IP协议
+  TCP/IP协议是目前应用最广泛的通信协议集合，它包含了目前网络通信中的大部分标准协议。支持跨网络架构，跨操作系统的通信。
+3：主机通信的三要素
+   IP地址（IP addresses）  IP路由(IP router)  子网掩码 (subnet mask)
+4: IP地址的作用
+    在网络中标示的唯一一台主机
+5：IP地址的分类
+    A类  1---127    255.0.0.0
+    B类 128---191   255.255.0.0
+    C类 192---223   255.255.255.0
+    D类 224---239（组播）
+    E类 240-254 （科研）
+6：IP地址的构成
+    IP地址=网络位+主机位
+     192.168.1.2  是192.168.1这个网络位中标志为2的主机
+7：子网掩码的作用
+    子网掩码是区分IP地址的网络位和主机位
+8：IP地址的设置方式
+    手动配置
+    自动配置（网络中需要有一台DHCP服务器）
+    DNS服务器：将域名解析位对应的IP
+9：LINUX是基于UNIX产生，UNIX的日期是1970年
+    内核是调用所有的硬件资源
+10：LINUX的版本有 Redhat  ubantu  fedora  Centos
+11：虚拟机的操作：ctrl +alt 让光标显示出来
+
+12：硬盘分区的流程
+    识别硬盘-----分区规划------格式化-----自动挂载
+    格式化：建立文件系统的过程
+    WINDOW的文件系统：FAT NTFS
+     LINUX的文件系统：SWAP  EXT4 swap
+
+13:LINUX的目录结构：一切皆文件
+   /Dev:存放设备的文件
+    hd:IDE设备
+    sd:iscsi设备
+    /dev/sda1 :代表ISCSI设备的第一分区的第一块
+
+14：虚拟控制台的切换
+   ctrl + alt + Fn  切换虚拟控制台
+15：[root@svr7 桌面]#
+    root:当前登陆用户   svr7 :主机名   桌面：当前所在位置
+
+16：PWD
+    作用：切换成当前用户
+
+17 ls: 查看当前目录和文件
+    格式：ls 选项 （-l  -h  -A  -d）  目录
+
+18：cd:切换当前位置
+    格式 ：cd  目录
+
+19：ctrl + l :清屏
+
+20：cat 查看文本文件内容
+    例：[root@room9pco1 ~]# cat  /etc/redhat-release 
+       CentOS Linux release 7.4.1708 (Core)
+
+21:命令行的一般格式：命令字  选项  参数1  参数2  
+   cat -n :在查看的内容上加上行号
+   [root@room9pco1 ~]# cat -n /etc/passwd
+
+22:查看内核版本
+    [root@room9pco1 ~]# uname -r
+
+23:查看命令的帮助信息
+  [root@room9pco1 ~]# cat  --help  (cat为需要查看的命令)
+
+24：查看cpu的信息
+   [root@room9pco1 ~]# lscpu
+
+25:查看内存的信息
+    [root@room9pco1 ~]# cat  /proc/meminfo 
+
+26:查看主机名的信息
+      [root@room9pco1 ~]# hostname
+
+27:设置主机的操作
+    [root@room9pco1 ~]# hostnamectl  set-hostname  tedu.cn （保持不变）
+    [root@room9pco1 ~]# hostname tedu.cn  (临时设置)
+     [root@room9pco1 ~]# vim /etc/hostname  (进入配置文件修改主机名)
+
+28:查看网卡的信息
+     [root@room9pco1 ~]# ifconfig
+     [root@room9pco1 ~]# ifconfig eth0  查看IP
+      [root@localhost ~]# ifconfig eth0 192.168.1.1  #临时设置IP
+      ctrl + c :终止当前的运行
+      eth0:代表第一张网卡
+
+29：关机和重起
+    poweroff   reboot
+
+30:创建目录  mkdir
+   [root@room9pco1 ~]# mkdir  /nsd01
+   [root@room9pco1 ~]# mkdir  -p  /nsd01/aa/bb/cc  (连同父目录一起创建)
+    [root@room9pco1 ~]# mkdir  /mnt/nsd02  /mnt/nsd03 (连续创建多个目录)
+ 
+31：创建文本文件 touch
+     [root@room9pco1 ~]# touch  /opt/1.txt
+      [root@room9pco1 ~]# touch  /opt/1.txt  /opt/2.txt
+
+32:绝对路径和相对路径
+      绝对路径：从 /开始的路径
+      相对路径：从当前位置的位置
+
+33:分屏查看文本文件
+    适合查看文本内容较多的文件
+   [root@room9pco1 ~]# less  /etc/passwd
+    /nologin   :查看当前文本文件中含nologin的内容
+     q     :退出当前查看
+
+34：head  tail 命令
+    [root@room9pco1 ~]# head   -3  /etc/passwd  :查看前3行的内容
+     [root@room9pco1 ~]# tail  -4  /etc/passwd   :查看倒数4行的内容
+      [root@room9pco1 ~]# head  -4  /etc/passwd | tail -1  :查看第4行的内容
+
+35：  grep 查找带有指定字符的内容 
+      [root@room9pco1 ~]# grep  root  /etc/passwd
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

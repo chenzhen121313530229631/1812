@@ -1,0 +1,164 @@
+1：查找文本文件内容user
+• 根据字符串模式提取文本行
+– grep [选项] '匹配模式' 文本文件...
+– 命令行 | grep [选项] '匹配模式'
+
+• 常用命令选项
+– -匹配
+– -i,忽略大小写
+
+[root@room9pco1 ~]# grep root  /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+[root@room9pco1 ~]# grep ROOT  /etc/passwd
+[root@room9pco1 ~]# grep -i ROOT  /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+operator:x:11:0:operator:/root:/sbin/nologin
+[root@room9pco1 ~]# 
+
+– ^word 以字符串word开头
+– word$ 以字符串word结尾
+–  ^$       匹配空行
+
+
+[root@room9pco1 ~]# grep  ^root  /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+[root@room9pco1 ~]# grep  word$  /etc/passwd
+[root@room9pco1 ~]# grep  root$  /etc/passwd
+[root@room9pco1 ~]# 
+
+查找文本文件
+ • 根据预设的条件递归查找对应的文件
+   格式：find  目录    选项（-type:类型     -name：文件名     -size ：大小     -user ：用户）  
+常用条件表示:
+  -type 类型(f 文件、d 目录、l 快捷方式)
+  -name "文档名称"
+  -size +|-文件大小(k、M、G)
+  -user 用户名
+
+
+– 常用条件表示:
+  -type 类型(f 文件、d 目录、l 快捷方式)
+
+[root@server0 ~]# find /boot/  -type d
+
+[root@server0 ~]# find /boot/  -type l
+/boot/grub/menu.lst
+[root@server0 ~]# ls /boot/grub/menu.lst 
+/boot/grub/menu.lst
+[root@server0 ~]# ls -l /boot/grub/menu.lst
+lrwxrwxrwx. 1 root root 9 5月   7 2014 /boot/grub/menu.lst -> grub.conf
+
+[root@server0 ~]# find /boot/ -type f
+
+
+  -name  "文档名称"
+[root@server0 ~]# find /etc/  -name  "passwd"
+
+[root@server0 ~]# find /etc/  -name  "*tab"
+
+[root@server0 ~]# find /etc/  -name  "*tab*"
+
+[root@server0 ~]# mkdir  /root/nsd01
+[root@server0 ~]# mkdir  /root/nsd02
+[root@server0 ~]# touch  /root/nsd1812.txt
+
+[root@server0 ~]# find  /root  -name  "nsd*"
+[root@server0 ~]# find  /root  -name  "nsd*"  -a  -type f
+[root@server0 ~]# find  /root  -name  "nsd*"   -type  f
+[root@server0 ~]# find  /root  -name  "nsd*"   -type  d
+
+
+  -size  +|-文件大小(k、M、G)
+[root@server0 ~]# find /boot/ -size +10M
+[root@server0 ~]# ls -lh /boot/initr*
+
+[root@server0 ~]# find /boot/ -size +300k
+
+  -user 用户名(按照文档所有者查找)
+[root@server0 ~]# find  /  -user student
+[root@server0 ~]# find  /  -user tom
+
+
+• 根据名称查找,忽略大小写
+– -iname
+[root@server0 ~]# find /etc -name "PASSWD"
+[root@server0 ~]# find /etc/ -iname "PASSWD"
+
+• 根据所属组
+– -group
+[root@server0 ~]# find /home/ -group tom
+
+• 限制目录查找的深度(最大层数)
+– -maxdepth
+[root@server0 ~]# find /etc/  -name  "*.conf"
+[root@server0 ~]# find /etc/  -maxdepth 1  -name  "*.conf"
+[root@server0 ~]# find /etc/  -maxdepth 2  -name  "*.conf"
+[root@server0 ~]# find /etc/  -maxdepth 3  -name  "*.conf"
+
+• 根据文件修改时间,都是过去时间
+– -mtime +10   #10天之前,创建或修改过的文件
+– -mtime -10   #最近10天之内,创建或修改过的文件
+
+ 三个月之前的日志文件?
+[root@server0 ~]# find /var/log -mtime +90
+
+[root@server0 ~]# find /var/log -mtime +1000
+
+[root@server0 ~]# find /opt -mtime -10
+
+
+#####################################################
+处理find查找到的结果:
+
+查找/boot目录下大于10M,将其复制到/opt
+]# find /boot/ -size +10M
+]# find /boot/ -size +10M  -exec cp {}  /opt/  \;
+]# ls /opt/
+
+查找/etc目录下以tab结尾的,将其复制到/mnt
+]# find /etc -name "*tab"
+]# find /etc -name "*tab" -exec cp {}   /mnt/  \;
+]# ls  /mnt
+
+案例2:查找并处理文件
+• 使用find命令完成以下任务                       
+– 找出所有用户 student 拥有的文件
+– 把它们拷贝到 /root/findfiles/ 文件夹中
+
+]# mkdir /root/findfiles
+
+]# find  /  -user  student  -type f
+ 
+]# find  /  -user  student  -type f   -exec cp  {}   /root/findfiles/  \;
+
+]# ls -A /root/findfiles/
+
+
+
+
+
+#######################################################
+查看命令帮助信息
+[root@server0 ~]# man find
+
+#######################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

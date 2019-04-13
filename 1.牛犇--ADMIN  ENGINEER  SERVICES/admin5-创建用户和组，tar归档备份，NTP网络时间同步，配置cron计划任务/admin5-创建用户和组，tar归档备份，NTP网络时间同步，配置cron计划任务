@@ -1,0 +1,212 @@
+环境布置：
+1：管理用户和组
+   用户账户：登陆操作系统，不同的用户具有不同的权限
+   组：方便管理用户
+   用户的为一标识： UID     GID
+   管理员的UID永远是0
+   组分为：基本组和附加组
+   基本组是LINUX系统创建，与用户同名
+   附加组：由系统管理员创建，并由系统管理员添加
+   在LINUX中一个用户至少有一个组
+
+2：所有的用户信息存放在/etc/passwd里面
+        [root@server0 ~]# cat  /etc/passwd
+        yg:x:1001:1001::/home/yg:/bin/bash
+      用户名：密码占位符：UID：GID：描述信息：家目录：解释器
+
+3：添加用户
+   格式：useradd  选项（-u:指定UID   -G ：指定GID附加组   -d ：指定家目录  -s ：指定客户是否能够登陆）  用户名
+   [root@server0 ~]# useradd nsd01
+   [root@server0 ~]# id  nsd01
+    uid=1003(nsd01) gid=1003(nsd01) 组=1003(nsd01)
+
+    -u:指定UID
+    [root@server0 ~]# useradd -u  1500 nsd04
+    [root@server0 ~]# id  nsd04
+    uid=1500(nsd04) gid=1500(nsd04) 组=1500(nsd04)
+
+     -G：指定GID 附加组
+        
+
+     -d:指定家目录
+    
+
+     -s:指定客户是否可以登陆
+         如果不添加，则创建的用户，系统默认可以登陆  /sbin/nologin 客户无法登陆  /bin/bash 客户可以正常登陆
+
+4：设置密码
+    设置交互式密码
+    使用passwd命令  格式：passwd  用户名
+   [root@server0 ~]# passwd nsd01
+
+    设置非交互的密码
+    [root@server0 ~]# echo 123 | passwd  --stdin  nsd01
+
+5: 重定向输出
+   >   ：覆盖重定向
+   >>  : 追加重定向
+   |  :管道  把前面命令执行的结果作为后面的命令参数
+  
+   [root@server0 ~]# tail  -2  /etc/passwd  >>  /opt/2.txt
+   [root@server0 ~]# hostname >  /opt/1.txt
+
+6：用户的密码信息存放在/etc/shadow
+
+7:查看系统的时间
+   [root@server0 ~]# date
+    
+   [root@server0 ~]# date  -s '2000-01-01  12:10:8'   修改时间
+    2000年 01月 01日 星期六 12:10:08 CST
+
+8：修改用户属性
+    使用usermod命令
+    usermod  选项 （-s  -u  -d   -G ）  用户名
+    
+9: 删除用户
+   userdel  选项（-r）  用户名    带上-r 标示连同家目录一起删除
+   [root@server0 ~]# userdel  -r nsd01
+
+10:管理组帐号
+    组账户的密码信息存放再  /etc/gshadow 里面
+    组的用户信息存放在     /etc/group 
+   使用gpasswd命令
+    格式：gpasswd  -a  用户名  组名   在组中添加用户
+        gpasswd  -d  用户名  组名   在组中删除用户
+
+11：修改组属性
+   使用groupmod 命令
+    groupmod  (-g  组ID )  -n 新组名  组名
+
+12：添加组和删除组
+    使用groupadd 命令
+     格式 ：groupadd  组名
+    [root@server0 ~]# grep stugrp  /etc/group
+    stugrp:x:1502:
+    格式：组名 密码占位符：组的GID ；组成员
+
+   使用groupdel 命令
+    格式：groupdel 组名
+
+#########################################################
+13：tar的备份与恢复
+   1：减少磁盘占用空间  2：将零散的数据整合
+   2：归档的含义：将零散的文件整合为一个文件，文件的大小不变
+
+   常见的压缩格式和命令选项
+   gz       -zcf
+   bz2      -jcf
+   xz       -Jcf
+    tar  选项     路径/文件     /路径/需要压缩的文件1   /路径/需要压缩的文件2   （压缩文件格式）
+    tar  -tf   /路径/压缩文件                 （查看压缩的文件内容）
+    tar   -xf    /路径/压缩文件    -C  /路径   （解压文件到指定的位置）
+
+14：NTP时间同步
+    NTP时间同步是NTP服务器为客户机提供标准时间，NTP客户机需要与NTP服务器保持沟通
+    NTP服务器:虚拟机classroom构建完成
+    NTP客户机:指定NTP服务器位置
+     
+    流程：1：安装chrony软件，可以与NTP服务器沟通
+          [root@server0 ~]# yum -y install chrony
+          2:修改主配置文件
+           [root@server0 ~]# vim  /etc/chrony.conf
+       
+           # Use public servers from the pool.ntp.org project.
+          # Please consider joining the pool (http://www.pool.ntp.org/join.html).
+           server 0.rhel.pool.ntp.org iburst
+           server 1.rhel.pool.ntp.org iburst
+           server 2.rhel.pool.ntp.org iburst
+           server classroom.example.com iburst
+          3:重起程序
+          [root@server0 ~]# systemctl restart chronyd
+          [root@server0 ~]# systemctl enable  chronyd
+          4:验证
+         [root@server0 ~]# date  -s '2000-01-0‘
+                2000年 01月 01日 星期六 00:00:00 CST
+         [root@server0 ~]# systemctl restart chronyd
+         [root@server0 ~]# date
+               2019年 02月 16日 星期六 20:32:57 CST
+
+15：crontab周期性计划任务
+       用户按照设置的时间规则反复执行某一固定任务
+      软件包：crontabs,cronie
+      日志文件：/var/log/crond
+
+      *;匹配下的任一时间
+      -：连续时间范围内
+     n/:时间频率，每n
+
+      30  */2  *   *   *  
+
+      34  8   *   *   1-5  
+
+       34  8   1   *   1      每月1号与每周一都会运行   
+
+     crontab命令格式
+      crontab   -e  -u  用户名        建立周期性计划任务
+      crontab   -l  -u   用户名       查看周期性计划任务
+      crontab   -r  -u   用户名       删除周期性计划任务
+
+       
+       [root@server0 ~]# crontab  -e  -u  root
+       *  *  *  *  * date >  /opt/time.txt
+       [root@server0 ~]# crontab  -r  -u  root
+       [root@server0 ~]# crontab  -l  -u  root
+       no crontab for root
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,106 @@
+安装firewalld服务
+	yum -y install firewalld
+启动firewalld服务
+	systemctl restart(start) firewalld
+防火墙策略基础
+	作用：隔离过滤
+	类型：硬件防火墙、软件防火墙
+
+防火墙工作原理
+	防火墙将访问的策略规则分成几个区域，当有请求访问时，防火墙会根据判定规则让请求进入相应的区域进行检测是否区符合区域内的防火墙策略规则，只有通过了区域内的所有策略规则才会允许请求通过防火墙
+
+防火墙判定的规则
+	查看客户端请求中的源ip地址，然后查阅自己哪个区域有该IP地址的规则，则进入该区域，如果所有区域都没有关于该IP地址的规则，则进入默认区域public
+
+预设安全区域
+	public（默认区域）:仅允许访问本机的sshd  dhcp   ping等少数几个服务
+	trusted:允许任何访问
+	block：阻塞任何来访的请求
+	drop:丢弃任何来访的数据包
+
+防火墙命令
+	查看防火墙默认区域：firewall-cmd --get-default-zone
+	修改防火墙默认区域：firewall-cmd --set-default-zone=public/trusted/block/drop..
+	查看指定区域的规则 ：firewall-cmd --zone=区域 --list-all
+	给指定区域添加允许访问的服务（临时添加）：firewall-cmd -zone=区域 --add-service=服务名称
+	在指定区域永久添加协议：firewall-cmd --permanent -zone=区域 --add-service=服务名称
+	重新加载防火墙所有规则：firewall-cmd --reload
+	删除防火墙规则：firewall-cmd (--permanent) -zone=区域 --remove-source=ip
+	端口转发：firewall-cmd (--permanent) -zone=区域 --add-forward-port=port=5423:proto:tcp:toport=80
+	
+
+面试必考
+互联网常见协议：                     默认端口
+	http：超文本传输协议：     		80       	
+	https:安全的超文本传输协议:		443
+	ftp:文本传输协议			21
+	tftp:简单的文本传输协议			69
+	DNS：域名解析协议			53
+	telnet:远程管理协议			23
+	SMTP：收邮件协议			25
+	pop3:发邮件协议				110
+	SNMP:简单网络管理协议			161
+
+
+1:SELinux安全机制
+• Security-Enhanced Linux
+– 美国NSA国家安全局主导开发,一套增强Linux系统安全的强制访问控制体系
+– 集成到Linux内核(2.6及以上)中运行
+– RHEL7基于SELinux体系针对用户、进程、目录和文件
+提供了预设的保护策略,以及管理工具
+
+
+SELinux运行模式的切换
+• SELinux的运行模式
+– enforcing(强制)、permissive(宽松)
+– disabled(彻底禁用)
+
+   变成disabled状态,必须经历重起系统
+
+• 切换运行模式
+– 临时切换:setenforce 1|0
+– 查看当前模式:getenforce 
+– 固定配置:/etc/selinux/config 文件
+
+虚拟机server
+[root@server0 ~]# vim /etc/selinux/config   #修改固定配置文件
+SELINUX=permissive
+
+[root@server0 ~]# getenforce     #查看SELinux当前模式
+[root@server0 ~]# setenforce  0  #修改当前模式为permissive
+[root@server0 ~]# getenforce 
+
+虚拟机desktop
+[root@desktop0 ~]# vim /etc/selinux/config 
+SELINUX=permissive
+
+[root@desktop0 ~]# getenforce 
+[root@desktop0 ~]# setenforce 0
+[root@desktop0 ~]# getenforce 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

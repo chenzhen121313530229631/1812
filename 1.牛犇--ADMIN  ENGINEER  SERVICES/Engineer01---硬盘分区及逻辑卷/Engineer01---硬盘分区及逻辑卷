@@ -1,0 +1,235 @@
+1:分区规划及使用
+  扇区的默认的大小是字节
+2：分区的规划流程
+  识别硬盘-----分区规划-----格式化-----自动挂载
+3：分区规划
+    MBR 主引导记录模式 
+     最大支持2.2TB
+     最大可以支持4个主分区，一般是设置3个主分区，1个扩展分区，n多个逻辑分区，扩展分区不能格式化，不能存储数据。
+
+第一步识别硬盘
+[root@room9pco1 ~]# lsblk
+NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+sda      8:0    0 465.8G  0 disk 
+├─sda1   8:1    0   200G  0 part /var/lib/libvirt/images
+└─sda2   8:2    0   120G  0 part /
+
+第二步分区规划
+使用交互式fdisk分区工具
+[root@server0 ~]# fdisk  /dev/vdb 
+  n 创建新的分区----->回车----->回车---->回车----->在last结束时 +2G
+  p 查看分区表
+  n 创建新的分区----->回车----->回车---->回车----->在last结束时 +1G
+  d 删除分区
+  w 保存并退出    
+
+[root@server0 ~]# lsblk
+[root@server0 ~]# ls  /dev/vdb[1-2]
+
+第三步：格式化
+三  格式化文件系统(存储的数据的规则)
+
+• mkfs 工具集
+– mkfs.ext3 分区设备路径
+– mkfs.ext4 分区设备路径
+– mkfs.xfs 分区设备路径
+– mkfs.vfat -F 32 分区设备路径
+
+[root@server0 ~]# mkfs.ext4 /dev/vdb1  #格式化文件系统为ext4
+[root@server0 ~]# blkid /dev/vdb1      #查看文件系统类型
+
+[root@server0 ~]# mkfs.xfs /dev/vdb2
+[root@server0 ~]# blkid /dev/vdb2
+
+[root@server0 ~]# mkfs.xfs /dev/vdb2
+mkfs.xfs: /dev/vdb2 appears to contain an existing filesystem (ext4).
+mkfs.xfs: Use the -f option to force overwrite.
+[root@server0 ~]# mkfs.xfs -f /dev/vdb2  #强制格式化
+
+第四步：建立自挂载
+
+root@server0 ~]# mkdir /mypart1                    //建立目录挂载
+[root@server0 ~]# mount /dev/vdb1  /mypart1           //挂载成功
+[root@server0 ~]# df  -h  #显示正在挂载设备的使用情况    //显示挂载成功
+
+[root@server0 ~]# mount /dev/vdb2 /mypart2
+mount: 挂载点 /mypart2 不存在
+[root@server0 ~]# mount /dev/vdb1  /mypart1
+[root@server0 ~]# df -h | tail -2
+
+
+第五部：建立自动挂载
+ 自动挂载的目录 /etc/fstab
+
+[root@server0 ~]# vim  /etc/fstab
+
+UUID=9bf6b9f7-92ad-441b-848e-0257cbb883d1 /                       xfs     defaults        1 1
+/dev/vdb1  /mypart1  xfs   defaults   0  0 
+/dev/vdb2   /mypart2  xfs   defaults    0   0
+
+[root@server0 ~]# mount  -a
+[root@server0 ~]# df  -h
+文件系统        容量  已用  可用 已用% 挂载点
+/dev/vda1        10G  3.0G  7.1G   30% /
+devtmpfs        906M     0  906M    0% /dev
+tmpfs           921M   80K  921M    1% /dev/shm
+tmpfs           921M   17M  904M    2% /run
+tmpfs           921M     0  921M    0% /sys/fs/cgroup
+/dev/vdb1       2.0G   33M  2.0G    2% /mypart1
+/dev/vdb2       2.0G   33M  2.0G    2% /mypart2
+
+操作流程
+1：lsblk  识别硬盘
+2：fdisk   分区规划
+3 ：mkfs.xfs   格式化
+4  :mount   /dev/vdb   /目录    建立挂载
+5   vim  /etc/fstab    建立自动挂载
+
+
+LVM逻辑卷
+      作用:   1.整合分散的空间     2.空间可以按照需求扩大
+
+
+– 零散空闲存储 ---- 整合的虚拟磁盘 ---- 虚拟的分区
+   物理卷 Physical Volume (PV)
+   卷组 Volume Group (VG)
+   逻辑卷 Logical Volume (LV)
+
+ 将众多的物理卷(PV),组建成卷组(VG),从卷组中划分出逻辑卷(LV)
+
+第一步创建卷组
+   命令格式: vgcreate  卷组名    设备路径......
+[root@server0 ~]# vgcreate  systemvg  /dev/vdc[1-2](若vdc1或vdc2有在挂载，则不能进行创建)
+[root@server0 ~]# vgs    #查看卷组信息
+[root@server0 ~]# pvs    #查看物理卷信息
+
+第二步：创建逻辑卷
+[root@server0 ~]# lvcreate  -L 8G -n vo systemvg 
+
+第三步：格式化
+[root@server0 ~]# mkfs.xfs /dev/systemvg/vo
+[root@server0 ~]# blkid /dev/systemvg/vo
+
+第四步：进行挂载
+ [root@server0 ~]# vim /etc/fstab 
+/dev/systemvg/vo   /mylv   xfs  defaults  0  0
+[root@server0 ~]# mkdir /mylv
+[root@server0 ~]# mount -a
+[root@server0 ~]# df -h
+
+
+逻辑卷扩展
+1：在卷组容量足够的情况下，直接扩展后再进行格式化
+    [root@server0 ~]# lvs
+    [root@server0 ~]# vgs
+    [root@server0 ~]# lvextend -L 18G /dev/systemvg/vo  //先扩展逻辑卷的容量
+
+      B:扩展文件系统
+     resize2fs:扩展ext4文件系统
+     xfs_growfs:扩展xfs文件系统
+    [root@server0 ~]# df -h
+    [root@server0 ~]# xfs_growfs /dev/systemvg/vo            格式化
+    [root@server0 ~]# df -h
+
+
+2：在卷组容量不够的情况下，先扩展卷组的容量，在扩张逻辑卷的容量，最后再格式化
+
+A:扩展卷组
+    [root@server0 ~]# vgextend  systemvg  /dev/vdc3
+      Physical volume "/dev/vdc3" successfully created
+      Volume group "systemvg" successfully extended
+    [root@server0 ~]# vgs
+    B:扩展逻辑卷的空间
+    [root@server0 ~]# lvs
+    [root@server0 ~]# lvextend -L 25G /dev/systemvg/vo 
+    [root@server0 ~]# lvs
+    [root@server0 ~]# df -h
+    C:扩展文件系统
+    [root@server0 ~]# df -h
+    [root@server0 ~]# xfs_growfs /dev/systemvg/vo
+    [root@server0 ~]# df -h
+
+ 逻辑卷空间可以进行缩小
+      ext4文件系统支持缩小
+      xfs文件系统不支持缩小
+
+
+###################################################
+卷组划分空间的单位:  默认4M  称为 PE
+
+[root@server0 ~]# vgdisplay systemvg  #显示卷组详细信息
+  PE Size               4.00 MiB
+
+
+• 创建卷组的时候设置PE大小
+– vgcreate -s PE大小  卷组名  空闲分区...
+• 修改卷组的时候设置PE大小
+– vgchange -s PE大小  卷组名  空闲分区...
+
+  请创建一个逻辑卷为lvtest01 ,大小为250M
+[root@server0 ~]# vgchange -s 1M systemvg 
+  Volume group "systemvg" successfully changed
+
+[root@server0 ~]# lvcreate -L 250M -n lvtest02 systemvg 
+  Logical volume "lvtest02" created
+
+[root@server0 ~]# lvs
+
+
+基于刚建立的 2000MiB 分区构建新的 LVM 存储
+– 新的逻辑卷命名为 database,大小为50个物理扩展单
+元(Physical Extent),属于 datastore 卷组
+– 在 datastore 卷组中的所有逻辑卷,其物理扩展单元
+(Physical Extent)的大小为16MiB
+– 使用 EXT3 文件系统对逻辑卷 database 格式化,此逻
+辑卷应该在开机时自动挂载到 /mnt/database 目录
+
+[root@server0 ~]# vgcreate -s  16M   datastore   /dev/sdd1
+[root@server0 ~]# vgdisplay  datastore   #显示卷组详细信息
+  PE Size               16.00 MiB
+
+[root@server0 ~]# lvcreate -l 50  -n  database  datastore
+
+了解:逻辑卷删除
+   
+  删除的顺序: 
+       首先删除逻辑卷,在删除卷组,最后删除物理卷(可以不删除物理卷)
+
+1.先卸载逻辑卷
+[root@server0 ~]# lvremove /dev/systemvg/vo 
+  Logical volume systemvg/vo contains a filesystem in use.
+[root@server0 ~]# umount /mylv/
+[root@server0 ~]# lvremove /dev/systemvg/vo 
+Do you really want to remove active logical volume vo? [y/n]: y
+  Logical volume "vo" successfully removed
+[root@server0 ~]# lvs
+[root@server0 ~]# lvremove /dev/systemvg/lvtest01
+Do you really want to remove active logical volume lvtest01? [y/n]: y
+  Logical volume "lvtest01" successfully removed
+[root@server0 ~]# lvremove /dev/systemvg/lvtest02
+Do you really want to remove active logical volume lvtest02? [y/n]: y
+  Logical volume "lvtest02" successfully removed
+[root@server0 ~]# lvs
+
+2.删除卷组(没有任何一个逻辑卷,基于此卷组创建)
+[root@server0 ~]# vgs
+[root@server0 ~]# vgremove systemvg 
+  Volume group "systemvg" successfully removed
+[root@server0 ~]# vgs
+  No volume groups found
+[root@server0 ~]# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

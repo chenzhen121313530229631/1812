@@ -1,0 +1,170 @@
+环境布置：
+– server —— 作为练习用服务器
+– desktop —— 作为练习用客户机
+– classroom —— 提供 dhcp分配IP地址/网关/DNS/软件素材等资源
+##################################################
+虚拟机Server:管理员的密码为 redhat  
+   1.查看系统版本: RHEL7.0
+   2.查看主机名:server0.example.com
+   3.查看eth0的IP地址: 172.25.0.11/24
+
+虚拟机Desktop:管理员的密码为 redhat
+   1.查看系统版本: RHEL7.0
+   2.查看主机名:desktop0.example.com
+   3.查看eth0的IP地址: 172.25.0.10/24
+
+##################################################
+1：ctrl + shift + t  ：开启另一个终端
+
+2: 进行远程管理的操作
+  格式：ssh  -x  root@172.25.0.11(-x:远程连接运行图形界面  root:用户名  172.25.0.11：对方的IP)
+
+3：/root/.bashrc  永久配置别名的配置文件
+   
+4:虚拟机server进行访问:
+[root@server0 ~]# firefox  classroom.example.com
+
+5:将软件包进行下载
+ 使用wget进行下载
+[root@server0 ~]# wget http://classroom.example.com/content/rhel7.0/x86_64/dvd/Packages/vsftpd-3.0.2-9.el7.x86_64.rpm
+
+6：安装软件包
+   RPM包管理器
+    rpm   -q      软件名    ：查看软件包是否安装  [root@server0 ~]# rpm   -q  zip
+    rpm   -ivh    软件名    ：安装软件 
+    rpm   -e      软件名    ：卸载软件
+
+7：yum 软件包仓库
+   自动解决rpm包安装的依赖关系
+   要求：服务端有众多的软件包和仓库软件清单 
+   搭建的方式：（file:本地安装  http:网络安装     ftp:  ）
+   
+   yum 软件包仓库的安装流程
+    1：[root@server0 ~]# rm  -rf  /etc/yum.repos.d/*.repo  避免已有的配置文件影响后续的安装和使用
+    2:[root@server0 ~]# vim  /etc/yum.repos.d/dvd.repo
+      [rhel7]                            (仓库标示)
+      name=rhel7                        （仓库描述信息）
+      baseurl=http://classroom.example.com/content/rhel7.0/x86_64/dvd/    (服务端的位置)
+      enabled=1                         （是否启用本文件）
+      gpgcheck=0                        （是否检测签名信息）
+    
+     3：[root@server0 ~]# yum repolist     列出仓库信息
+     4：[root@server0 ~]# yum clean all    清除缓存信息
+
+8：升级内核
+    1：安装新的内核软件包
+     [root@server0 ~]# wget http://classroom.example.com/content/rhel7.0/x86_64/errata/Packages/kernel-3.10.0-123.1.2.el7.x86_64.rpmu
+    2:查看当前的内核版本
+      [root@server0 ~]# uname  -r
+    3:安装软件包
+       [root@server0 ~]# rpm  -ivh kernel-3.10.0-123.1.2.el7.x86_64.rpm 
+    4:查看当前的内核版本
+        [root@server0 ~]# uname  -r
+
+9：配置网络静态参数
+   1：永久设置主机名
+     方法1：[root@server0 ~]# vim  /etc/hostname  (进入主机名配置文件修改)
+     方法2：[root@server0 ~]# echo 'server0.example.com' >  /etc/hostname
+  
+  2: 永久配置IP地址  子网掩码 
+      网卡配置文件：etc/sysconfig/network-scripts/ifcfg-eth0
+
+      利用nmci命令查看eth0的信息
+     [root@server0 ~]# nmcli connection  show
+
+      利用nmcli进行配置
+      nmcli connection modify  'System  eth0'          nmcli connection  修改   '网卡名称'
+      ipv4.method manual                               ipv4.方法   手工配置
+      ipv4.addresses '172.25.0.110/24  172.25.0.254'   ipv4.地址   'IP地址/子网掩码    网关地址'
+      connection.autoconnect  yes                      每次开机自动启用配置
+
+        激活配置
+       nmcli connection up 'System eth0'
+   
+     3:DNS服务器
+       [root@server0 ~]# vim  /etc/resolv.conf 
+        nameserver  172.25.25.254              (指定解析的服务器)
+
+    4:测试DNS解析的命令
+        [root@server0 ~]# nslookup  desktop.example.com
+        [root@server0 ~]# nslookup  desktop0.example.com
+   
+     5:网络参数配置的顺序
+      先配置主机名  再配置 IP地址  子网掩码  网关  ，最后指定DNS服务器
+
+     查看网关的配置
+     [root@server0 ~]# route
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+‘
+
+
+
+
+
+
+
+
+
+
+
+
+
+~             
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
